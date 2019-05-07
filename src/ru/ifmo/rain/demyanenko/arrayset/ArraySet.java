@@ -224,7 +224,7 @@ public class ArraySet<E> implements NavigableSet<E> {
 
 	@Override
 	public Iterator<E> descendingIterator() {
-		ListIterator<E> listIterator = this.array.listIterator();
+		ListIterator<E> listIterator = this.array.listIterator(this.array.size());
 		return new Iterator<E>() {
 
 			@Override
@@ -241,7 +241,9 @@ public class ArraySet<E> implements NavigableSet<E> {
 	
 	@Override
 	public NavigableSet<E> descendingSet() {
-		return null;
+        List<E> list = new ArrayList<>(); 
+        descendingIterator().forEachRemaining(list::add); 
+		return new ArraySet<>(list);
 	}
 
 	private int floorIndex(E e) {
