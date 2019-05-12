@@ -22,7 +22,7 @@ public class RecursiveWalk {
                 try {
                     created = outputPath.toFile().createNewFile();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // e.printStackTrace();
                 }
             }
             created &= outputPath.toFile().canWrite();
