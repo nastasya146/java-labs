@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"ru.ifmo.rain.demyanenko.implementor","l":"BaseImplementator"},{"p":"ru.ifmo.rain.demyanenko.implementor","l":"ClassImplementator"},{"p":"ru.ifmo.rain.demyanenko.implementor","l":"Implementator"},{"p":"ru.ifmo.rain.demyanenko.implementor","l":"InterfaceImplementator"}]
