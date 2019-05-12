@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.AbstractCollection;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
 public class ArraySet<E> implements NavigableSet<E> {
 	private final List<E> array;
@@ -23,19 +22,6 @@ public class ArraySet<E> implements NavigableSet<E> {
 	private boolean isNatural = false; 
 	
 	public static void main(String[] args) {
-		ArrayList<Integer> array = new ArrayList<Integer>();
-		array.add(1);
-		array.add(-13);
-		array.add(2);
-		ArraySet<Integer> set = new ArraySet(array);
-		NavigableSet n = set.subSet(3, false, 1, false);
-		System.out.println(set.ceiling(-10));
-		System.out.println(n.pollFirst() + " " + n.pollLast());
-		TreeSet<Integer> s = new TreeSet();
-		s.add(1);
-		s.add(-13);
-		s.add(2);
-		System.out.println(s.tailSet(2, false).pollFirst());
 
 	}
 	
@@ -147,6 +133,16 @@ public class ArraySet<E> implements NavigableSet<E> {
 	}
 
 	@Override
+	public E pollFirst() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public E pollLast() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public boolean add(E e) {
 		throw new UnsupportedOperationException();
 	}
@@ -189,12 +185,12 @@ public class ArraySet<E> implements NavigableSet<E> {
 	
 	@Override
 	public Object[] toArray() {
-		return this.array != null ? this.array.toArray() : null;
+		return this.array.toArray();
 	}
 
 	@Override
 	public <T> T[] toArray(T[] a) {
-		return this.array != null ? this.array.toArray(a) : null;
+		return this.array.toArray(a);
 	}
 
 	private int ceilingIndex(E e) {
@@ -212,7 +208,6 @@ public class ArraySet<E> implements NavigableSet<E> {
 	
 	@Override
 	public E ceiling(E e) {
-        if (e == null) return null;
 		int index = this.ceilingIndex(e);
 		
 		if (index >= 0) {
@@ -240,10 +235,8 @@ public class ArraySet<E> implements NavigableSet<E> {
 	}
 	
 	@Override
-	public NavigableSet<E> descendingSet() {
-        List<E> list = new ArrayList<>(); 
-        descendingIterator().forEachRemaining(list::add); 
-		return new ArraySet<>(list);
+	public NavigableSet<E> descendingSet() {	
+		return new ArraySet<>(this.array, this.comparator == null ? (Comparator<? super E>)Comparator.naturalOrder().reversed() : comparator.reversed());
 	}
 
 	private int floorIndex(E e) {
@@ -261,7 +254,6 @@ public class ArraySet<E> implements NavigableSet<E> {
 	
 	@Override
 	public E floor(E e) {
-        if (e == null) return null;
 		int index = floorIndex(e);
 
 		if (index >= 0) {
@@ -278,8 +270,7 @@ public class ArraySet<E> implements NavigableSet<E> {
 
 	@Override
 	public NavigableSet<E> headSet(E toElement, boolean inclusive) {
-        var first = this.array.size() > 0 ? this.array.get(0) : null;
-		return this.subSet(first, true, toElement, inclusive);
+		return this.subSet(this.pollFirstInner(), true, toElement, inclusive, true);
 	}
 	
 	private int higherIndex(E e) {
@@ -297,7 +288,6 @@ public class ArraySet<E> implements NavigableSet<E> {
 	
 	@Override
 	public E higher(E e) {
-        if (e == null) return null;
 		int index = this.higherIndex(e);
 		if (index >= 0) {
 			return this.array.get(index);
@@ -342,8 +332,7 @@ public class ArraySet<E> implements NavigableSet<E> {
 	}
 	
 	@Override
-	public E lower(E e) {        
-        if (e == null) return null;
+	public E lower(E e) {
 		int index = this.lowerIndex(e);
 		if (index >= 0) {
 			return this.array.get(index);
@@ -351,45 +340,39 @@ public class ArraySet<E> implements NavigableSet<E> {
 		return null;
 	}
 
-	@Override
-	public E pollFirst() {
-		/*if (this.array.size() > 0) {
-            try {
-                return this.array.get(0);
-            } catch (Exception e) {
-                throw new UnsupportedOperationException();
-            }
-		}*/
-        throw new UnsupportedOperationException();
+	public E pollFirstInner() {
+		if (this.array.size() > 0) {
+			return this.array.get(0);
+		}
+		return null;
 	}
 
-	@Override
-	public E pollLast() {
-		/*if (this.array.size() > 0) {
-            try {
-                return this.array.get(this.array.size() - 1);
-            } catch (Exception e) {
-                throw new UnsupportedOperationException();
-            }
-        }*/
-        throw new UnsupportedOperationException();
+	public E pollLastInner() {
+		if (this.array.size() > 0) {
+			return this.array.get(this.array.size() - 1);
+		}
+		return null;
 	}
 
 	@Override
 	public SortedSet<E> subSet(E fromElement, E toElement) {
-        if (fromElement == null || toElement == null) {
-            return new ArraySet<E>();
-        }
-        if (this.comparator != null && this.comparator.compare(fromElement, toElement) > 0) {
-            throw new IllegalArgumentException();
-        } 
-        return this.subSet(fromElement, true, toElement, false);
+		return this.subSet(fromElement, true, toElement, false, false);
 	}
 
-	
 	@Override
 	public NavigableSet<E> subSet(E fromElement, boolean fromInclusive, E toElement, boolean toInclusive) {
+		return this.subSet(fromElement, fromInclusive, toElement, toInclusive, false);
+	}
+	
+	public NavigableSet<E> subSet(E fromElement, boolean fromInclusive, E toElement, boolean toInclusive, boolean inner) {
 		int fromIndex;
+
+		if (!inner) {
+			if (this.comparator == null ? ((Comparable<? super E>) fromElement).compareTo(toElement) > 0 : this.comparator.compare(fromElement, toElement) > 0) {
+				throw new IllegalArgumentException();
+			}
+		} 
+
 		if (fromInclusive) {
 			fromIndex = this.ceilingIndex(fromElement);
 		} else {
@@ -421,8 +404,7 @@ public class ArraySet<E> implements NavigableSet<E> {
 
 	@Override
 	public NavigableSet<E> tailSet(E fromElement, boolean inclusive) {
-        var last = this.array.size() > 0 ? this.array.get(this.array.size() - 1) : null;
-		NavigableSet<E> result = this.subSet(fromElement, inclusive, last, true);
+		NavigableSet<E> result = this.subSet(fromElement, inclusive, this.pollLastInner(), true, true);
 		return result;
 		
 	}
